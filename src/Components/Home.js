@@ -3,7 +3,6 @@ import { Navbar } from "./Navbar";
 import { Products } from "./Products";
 import { auth, fs } from "../Config/Config";
 import { IndividualFilteredProduct } from "./IndividualFilteredProduct";
-import axios from "axios";
 import { getAllProducts } from "../services/product-management/product-management-service";
 
 export const Home = (props) => {
@@ -28,6 +27,8 @@ export const Home = (props) => {
   // state of products
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [cartProducts, setCartProducts] = useState([]);
+  const [totalProducts, setTotalProducts] = useState(0); // state of totalProducts
 
   // fetch all product details
   async function fetchAllProducts() {
@@ -39,22 +40,21 @@ export const Home = (props) => {
     fetchAllProducts();
   }, []);
 
-  // state of totalProducts
-  const [totalProducts, setTotalProducts] = useState(0);
   // getting cart products
-  useEffect(() => {
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        fs.collection("Cart " + user.uid).onSnapshot((snapshot) => {
-          const qty = snapshot.docs.length;
-          setTotalProducts(qty);
-        });
-      }
-    });
-  }, []);
+  // useEffect(() => {
+  //   auth.onAuthStateChanged((user) => {
+  //     if (user) {
+  //       fs.collection("Cart " + user.uid).onSnapshot((snapshot) => {
+  //         const qty = snapshot.docs.length;
+  //         setTotalProducts(qty);
+  //       });
+  //     }
+  //   });
+  // }, []);
 
   // globl variable
   let Product;
+  const productArray = [];
 
   // add to cart
   const addToCart = (product) => {
@@ -63,12 +63,15 @@ export const Home = (props) => {
       Product = product;
       Product["qty"] = 1;
       Product["TotalProductPrice"] = Product.qty * Product.price;
-      fs.collection("Cart " + uid)
-        .doc(product.ID)
-        .set(Product)
-        .then(() => {
-          console.log("successfully added to cart");
-        });
+      productArray.push(Product);
+      setCartProducts([...cartProducts, productArray]);
+      setTotalProducts(cartProducts.length + 1);
+      // fs.collection("Cart " + uid)
+      //   .doc(product.ID)
+      //   .set(Product)
+      //   .then(() => {
+      //     console.log("successfully added to cart");
+      //   });
     } else {
       props.history.push("/login");
     }
@@ -108,7 +111,11 @@ export const Home = (props) => {
 
   return (
     <>
-      <Navbar user={user} totalProducts={totalProducts} />
+      <Navbar
+        user={user}
+        totalProducts={totalProducts}
+        cartProducts={cartProducts}
+      />
       <br></br>
       <div className="container-fluid filter-products-main-box">
         <div className="filter-box">

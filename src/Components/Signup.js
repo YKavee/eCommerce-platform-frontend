@@ -19,7 +19,7 @@ export const Signup = () => {
         e.preventDefault();
 
         try {
-			const url = "http://localhost:3000/user/signup";
+			const url = "http://localhost:3000/food-ordering/v1/users/signup";
             const data = {email:email, password:password};
 			const res = await axios.post(url, data);
 			localStorage.setItem("token", JSON.stringify(res.data.token));
